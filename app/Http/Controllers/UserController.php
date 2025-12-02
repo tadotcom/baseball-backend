@@ -33,7 +33,6 @@ class UserController extends Controller
     }
 
     /**
-     * ★★★ 以下を新規追加 ★★★
      * ユーザー詳細を表示 (SCR-ADM-002)
      */
     public function show(User $user): View

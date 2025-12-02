@@ -12,21 +12,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // 既存のバッチ (要件定義書 [cite: 47] より)
         $schedule->command('games:update-status')
-            ->cron('0 * * * *') // 毎時0分
+            ->cron('0 * * * *')
             ->withoutOverlapping()
             ->runInBackground();
             
-        // ★★★ ここから追記 ★★★
-        
-        // 参加者不足の試合を中止にするバッチ（毎時0分に実行）
         $schedule->command('games:cancel-low-participants')
-            ->hourly() // ->cron('0 * * * *') と同じ意味です
+            ->hourly() 
             ->withoutOverlapping()
             ->runInBackground();
-            
-        // ★★★ 追記ここまで ★★★
     }
 
     /**

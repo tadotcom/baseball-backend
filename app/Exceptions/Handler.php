@@ -3,31 +3,21 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request; // Import Request
-use Illuminate\Auth\AuthenticationException; // 認証エラー
-use Illuminate\Validation\ValidationException; // バリデーションエラー
-use Illuminate\Auth\Access\AuthorizationException; // 認可エラー
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException; // 404エラー
-use Symfony\Component\HttpKernel\Exception\HttpException; // 一般的なHTTPエラー
-use Illuminate\Support\Facades\Log; // ログ出力用
-use Throwable; // PHP 7+
+use Illuminate\Http\Request; 
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<Throwable>>
-     */
     protected $dontReport = [
         // 必要に応じてログに出力しない例外を定義
     ];
 
-    /**
-     * A list of the inputs that are never flashed to the session on validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
@@ -42,9 +32,7 @@ class Handler extends ExceptionHandler
     {
         // --- 例外のレポート（ログ出力）設定 ---
         $this->reportable(function (Throwable $e) {
-            // APIリクエストで発生したサーバーエラー(5xx)などをログに記録
             if ($this->shouldReport($e) && app()->bound('log')) {
-                 // 認証済みユーザーがいれば、ユーザーIDもログに追加
                  $userId = auth()->check() ? auth()->user()->getAuthIdentifier() : 'guest';
                  Log::error( //
                      $e->getMessage(),
@@ -54,7 +42,6 @@ class Handler extends ExceptionHandler
                         'file' => $e->getFile(),
                         'line' => $e->getLine(),
                         'trace' => $e->getTraceAsString(),
-                        // 可能であればエラーコードを取得 (カスタム例外など)
                         'error_code' => method_exists($e, 'getErrorCode') ? $e->getErrorCode() : 'N/A' //
                      ])
                  );
@@ -63,12 +50,10 @@ class Handler extends ExceptionHandler
 
         // --- 例外のレンダリング（レスポンス返却）設定 ---
         $this->renderable(function (Throwable $e, Request $request) {
-            // APIリクエスト (JSONを期待) の場合のみ特別処理
             if ($request->expectsJson()) {
                 return $this->handleApiException($e);
             }
 
-            // Webリクエストの場合はLaravelのデフォルトレンダリングに任せる
             return parent::render($request, $e);
         });
     }
@@ -83,7 +68,7 @@ class Handler extends ExceptionHandler
     protected function handleApiException(Throwable $e): \Illuminate\Http\JsonResponse
     {
         $statusCode = $this->isHttpException($e) ? $e->getStatusCode() : 500;
-        $errorCode = 'E-XXX-XX'; // デフォルト
+        $errorCode = 'E-XXX-XX';
         $message = 'エラーが発生しました';
         $details = [];
 
